@@ -1,24 +1,21 @@
 import pygame
-from pygame.locals import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
 import os
+from pygame.locals import *
+from menu import MainMenu
 
-# Import local modules
-from menu import MainMenu  # We'll define this in menu.py
-
-# Import Assets
-FONT_PATH = os.path.join("assets", "ndsbios.ttf")
-
-
-# Initialize Pygame and OpenGL
+# Initialize Pygame
 def main():
     pygame.init()
     display = (480, 480)
-    pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+    screen = pygame.display.set_mode(display)
+    pygame.display.set_caption("PyBreakout")
 
     clock = pygame.time.Clock()
     running = True
+    isGame = False
+
+    menu = MainMenu()
+    # game = Game()  # To be defined later
 
     while running:
         events = pygame.event.get()
@@ -26,7 +23,15 @@ def main():
             if event.type == QUIT:
                 running = False
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        if isGame:
+            # game.handle_events(events)
+            # game.update()
+            # game.render()
+            pass
+        else:
+            menu.handle_events(events)
+            menu.update()
+            menu.render()
 
         pygame.display.flip()
         clock.tick(60)
