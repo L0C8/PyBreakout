@@ -2,6 +2,7 @@ import pygame
 import os
 from pygame.locals import *
 from menu import MainMenu
+from game import Game
 
 # Initialize Pygame
 def main():
@@ -15,7 +16,7 @@ def main():
     isGame = False
 
     menu = MainMenu()
-    # game = Game()  # To be defined later
+    game = None
 
     while running:
         events = pygame.event.get()
@@ -24,12 +25,18 @@ def main():
                 running = False
 
         if isGame:
-            # game.handle_events(events)
-            # game.update()
-            # game.render()
-            pass
+            if game.handle_events(events):
+                isGame = False
+                menu = MainMenu()
+            game.update()
+            game.render()
         else:
-            menu.handle_events(events)
+            result = menu.handle_events(events)
+            if result == "Start Game":
+                isGame = True
+                game = Game()
+            elif result == "Exit":
+                running = False
             menu.update()
             menu.render()
 
