@@ -73,11 +73,15 @@ class Game:
             ball_rect = pygame.Rect(self.ball_x, self.ball_y, self.ball_size, self.ball_size)
             if ball_rect.colliderect(rect):
                 self.ball_dy *= -1
-                if i in [0, 1]:
+                if i == 0:
                     self.ball_dx = -4
+                if i == 1:
+                    self.ball_dx = random.choice([-3, -1])
                 elif i == 2:
-                    self.ball_dx = random.choice([-2, 2])
-                elif i in [3, 4]:
+                    self.ball_dx = random.choice([-1, 1])
+                elif i == 3:
+                    self.ball_dx = random.choice([3, 1])
+                elif i == 4:
                     self.ball_dx = 4
                 break
 
