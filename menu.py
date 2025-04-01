@@ -42,8 +42,20 @@ class MainMenu:
 
     def handle_events(self, events):
         for event in events:
+            # set selected item
             if event.type == pygame.MOUSEMOTION:
                 mouse_pos = event.pos
                 for i, rect in enumerate(self.option_rects):
                     if rect.collidepoint(mouse_pos):
                         self.selected_index = i
+            # mouse clicked
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+                for i, rect in enumerate(self.option_rects):
+                    if rect.collidepoint(mouse_pos):
+                        self.selected_index = i
+                        return self.options[i]
+            # keyboard enter 
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    return self.options[self.selected_index]
