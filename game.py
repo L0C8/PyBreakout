@@ -53,15 +53,15 @@ class Game:
         self.box_cols = 8
         self.box_width = 50
         self.box_height = 20
-        self.box_padding = 5
+        self.box_padding = 10
         self.boxes = [] 
 
         # 2D array of (rect, active)
         for row in range(self.box_rows):
             box_row = []
             for col in range(self.box_cols):
-                x = col * (self.box_width + self.box_padding) + 40
-                y = row * (self.box_height + self.box_padding) + 40
+                x = col * (self.box_width + self.box_padding) + 5
+                y = row * (self.box_height + self.box_padding) + 80
                 rect = pygame.Rect(x, y, self.box_width, self.box_height)
                 box_row.append([rect, True])
             self.boxes.append(box_row)
