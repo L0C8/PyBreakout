@@ -19,6 +19,7 @@ class Game:
         self.title_font = pygame.font.Font(FONT_PATH, 32)
 
         # game logic
+        self.lives = 3
         self.Score = 0
         self.paused = True
         self.pause_options = ["Resume", "Exit"]
@@ -123,6 +124,17 @@ class Game:
                     self.ball_dx = 4
                 break
 
+        # Ball falls below play area
+        if self.ball_y > 480:
+            self.ball_x = 235
+            self.ball_y = 300
+            self.ball_dx = 3
+            self.ball_dy = 3
+            if self.lives > 0:
+                self.lives -= 1
+            else:
+                return True
+
     def render(self):
         screen = pygame.display.get_surface()
         screen.fill((0, 0, 0))
@@ -131,6 +143,8 @@ class Game:
         pygame.draw.line(screen, WHITE, (0, 32), (480, 32), 2)
         title_surface = self.text_font.render("PYBREAKOUT", True, WHITE)
         screen.blit(title_surface, title_surface.get_rect(center=(240, 16)))
+        lives_surface = self.text_font.render(f"Lives: {self.lives}", True, WHITE)
+        screen.blit(lives_surface, (10, 8))
         score_surface = self.text_font.render(f"Score: {self.Score}", True, WHITE)
         screen.blit(score_surface, (360, 8))
 
