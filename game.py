@@ -19,10 +19,11 @@ class Game:
         self.title_font = pygame.font.Font(FONT_PATH, 32)
 
         # game logic
-        self.isPaused = True
-        self.inPauseMenu = False
+        self.Score = 0
+        self.paused = True
         self.pause_options = ["Resume", "Exit"]
         self.selected_index = 0
+        self.showing_pause_menu = False
 
         # Player setup
         self.block_width = 20
@@ -47,8 +48,26 @@ class Game:
         self.ball_dx = 3
         self.ball_dy = 3
 
+        # Boxes setup
+        self.box_rows = 5
+        self.box_cols = 8
+        self.box_width = 50
+        self.box_height = 20
+        self.box_padding = 5
+        self.boxes = [] 
+
+        # 2D array of (rect, active)
+        for row in range(self.box_rows):
+            box_row = []
+            for col in range(self.box_cols):
+                x = col * (self.box_width + self.box_padding) + 40
+                y = row * (self.box_height + self.box_padding) + 40
+                rect = pygame.Rect(x, y, self.box_width, self.box_height)
+                box_row.append([rect, True])
+            self.boxes.append(box_row)
+
     def update(self):
-        if self.isPaused or self.inPauseMenu:
+        if self.paused:
             return
 
         keys = pygame.key.get_pressed()
@@ -65,8 +84,23 @@ class Game:
         # Bounce off window edges
         if self.ball_x <= 0 or self.ball_x + self.ball_size >= 480:
             self.ball_dx *= -1
-        if self.ball_y <= 0:
+        if self.ball_y <= 32:
             self.ball_dy *= -1
+
+        # Collide with boxes
+        ball_rect = pygame.Rect(self.ball_x, self.ball_y, self.ball_size, self.ball_size)
+        for row in self.boxes:
+            for box in row:
+                rect, active = box
+                if active and ball_rect.colliderect(rect):
+                    box[1] = False
+                    self.Score += 10
+                    # Simple bounce logic: invert dy
+                    if abs(self.ball_y + self.ball_size - rect.top) < 5 or abs(self.ball_y - rect.bottom) < 5:
+                        self.ball_dy *= -1
+                    else:
+                        self.ball_dx *= -1
+                    break
 
         # Collide with player 
         for i, rect in enumerate(self.blocks):
@@ -89,7 +123,14 @@ class Game:
         screen = pygame.display.get_surface()
         screen.fill((0, 0, 0))
 
-        if self.inPauseMenu:
+        # Draw top boundary and HUD
+        pygame.draw.line(screen, WHITE, (0, 32), (480, 32), 2)
+        title_surface = self.text_font.render("PYBREAKOUT", True, WHITE)
+        screen.blit(title_surface, title_surface.get_rect(center=(240, 16)))
+        score_surface = self.text_font.render(f"Score: {self.Score}", True, WHITE)
+        screen.blit(score_surface, (360, 8))
+
+        if self.showing_pause_menu:
             title_surface = self.title_font.render("Paused", True, WHITE)
             screen.blit(title_surface, title_surface.get_rect(center=(240, 150)))
 
@@ -103,29 +144,36 @@ class Game:
         for rect in self.blocks:
             pygame.draw.rect(screen, self.block_color, rect)
 
+        # Draw boxes
+        colors = [RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE]
+        for row_index, row in enumerate(self.boxes):
+            color = colors[min(row_index, len(colors)-1)]
+            for rect, active in row:
+                if active:
+                    pygame.draw.rect(screen, color, rect)
+
         # Draw ball
         pygame.draw.rect(screen, self.ball_color, pygame.Rect(self.ball_x, self.ball_y, self.ball_size, self.ball_size))
 
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if self.inPauseMenu:
+                if self.showing_pause_menu:
                     if event.key == pygame.K_UP:
                         self.selected_index = (self.selected_index - 1) % len(self.pause_options)
                     elif event.key == pygame.K_DOWN:
                         self.selected_index = (self.selected_index + 1) % len(self.pause_options)
                     elif event.key == pygame.K_RETURN:
-                        selected_index = self.pause_options.index(self.pause_options[self.selected_index])
-                        selected = self.pause_options[selected_index]
+                        selected = self.pause_options[self.selected_index]
                         if selected == "Resume":
-                            self.inPauseMenu = False
-                            self.isPaused = False
+                            self.showing_pause_menu = False
+                            self.paused = False
                         elif selected == "Exit":
                             return True
                 else:
                     if event.key == pygame.K_RETURN:
-                        self.isPaused = not self.isPaused
+                        self.paused = not self.paused
                     elif event.key == pygame.K_ESCAPE:
-                        self.inPauseMenu = True
-                        self.isPaused = True
+                        self.showing_pause_menu = True
+                        self.paused = True
         return False
