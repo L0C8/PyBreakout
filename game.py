@@ -23,22 +23,22 @@ class Game:
         self.paused = True
         self.pause_options = ["Resume", "Exit"]
         self.selected_index = 0
-        self.showing_pause_menu = False
+        self.pause_option_rects = []
 
         # Player setup
-        self.block_width = 20
-        self.block_height = 10
-        self.block_color = WHITE
-        self.num_blocks = 5
-        self.blocks = []
+        self.player_width = 20
+        self.player_height = 10
+        self.player_color = WHITE
+        self.num_player = 5
+        self.player = []
         self.center_x = 240
         self.y = 440
 
         # build player segments
-        start_x = self.center_x - (self.num_blocks * self.block_width) // 2
-        for i in range(self.num_blocks):
-            rect = pygame.Rect(start_x + i * self.block_width, self.y, self.block_width, self.block_height)
-            self.blocks.append(rect)
+        start_x = self.center_x - (self.num_player * self.player_width) // 2
+        for i in range(self.num_player):
+            rect = pygame.Rect(start_x + i * self.player_width, self.y, self.player_width, self.player_height)
+            self.player.append(rect)
 
         # Ball setup
         self.ball_size = 10
@@ -72,10 +72,10 @@ class Game:
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
-            for rect in self.blocks:
+            for rect in self.player:
                 rect.x -= 5
         if keys[pygame.K_RIGHT]:
-            for rect in self.blocks:
+            for rect in self.player:
                 rect.x += 5
 
         self.ball_x += self.ball_dx
@@ -103,7 +103,7 @@ class Game:
                     break
 
         # Collide with player 
-        for i, rect in enumerate(self.blocks):
+        for i, rect in enumerate(self.player):
             ball_rect = pygame.Rect(self.ball_x, self.ball_y, self.ball_size, self.ball_size)
             if ball_rect.colliderect(rect):
                 self.ball_dy *= -1
@@ -130,19 +130,22 @@ class Game:
         score_surface = self.text_font.render(f"Score: {self.Score}", True, WHITE)
         screen.blit(score_surface, (360, 8))
 
-        if self.showing_pause_menu:
+        if self.paused:
             title_surface = self.title_font.render("Paused", True, WHITE)
             screen.blit(title_surface, title_surface.get_rect(center=(240, 150)))
 
+            self.pause_option_rects = []
             for i, option in enumerate(self.pause_options):
                 color = WHITE if i == self.selected_index else (128, 128, 128)
                 option_surface = self.text_font.render(option, True, color)
-                screen.blit(option_surface, option_surface.get_rect(center=(240, 220 + i * 40)))
+                option_rect = option_surface.get_rect(center=(240, 220 + i * 40))
+                screen.blit(option_surface, option_rect)
+                self.pause_option_rects.append(option_rect)
             return
 
         # Draw player blocks
-        for rect in self.blocks:
-            pygame.draw.rect(screen, self.block_color, rect)
+        for rect in self.player:
+            pygame.draw.rect(screen, self.player_color, rect)
 
         # Draw boxes
         colors = [RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE]
@@ -158,7 +161,7 @@ class Game:
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if self.showing_pause_menu:
+                if self.paused:
                     if event.key == pygame.K_UP:
                         self.selected_index = (self.selected_index - 1) % len(self.pause_options)
                     elif event.key == pygame.K_DOWN:
@@ -166,7 +169,6 @@ class Game:
                     elif event.key == pygame.K_RETURN:
                         selected = self.pause_options[self.selected_index]
                         if selected == "Resume":
-                            self.showing_pause_menu = False
                             self.paused = False
                         elif selected == "Exit":
                             return True
@@ -174,6 +176,17 @@ class Game:
                     if event.key == pygame.K_RETURN:
                         self.paused = not self.paused
                     elif event.key == pygame.K_ESCAPE:
-                        self.showing_pause_menu = True
                         self.paused = True
+
+            elif event.type == pygame.MOUSEBUTTONDOWN and self.paused:
+                mouse_pos = event.pos
+                for i, rect in enumerate(self.pause_option_rects):
+                    if rect.collidepoint(mouse_pos):
+                        self.selected_index = i
+                        selected = self.pause_options[i]
+                        if selected == "Resume":
+                            self.paused = False
+                        elif selected == "Exit":
+                            return True
+
         return False
