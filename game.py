@@ -72,11 +72,15 @@ class Game:
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
-            for rect in self.player:
-                rect.x -= 5
+            leftmost = min(rect.left for rect in self.player)
+            if leftmost > 0:
+                for rect in self.player:
+                    rect.x -= 5
         if keys[pygame.K_RIGHT]:
-            for rect in self.player:
-                rect.x += 5
+            rightmost = max(rect.right for rect in self.player)
+            if rightmost < 480:
+                for rect in self.player:
+                    rect.x += 5
 
         self.ball_x += self.ball_dx
         self.ball_y += self.ball_dy
